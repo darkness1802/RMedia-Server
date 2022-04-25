@@ -22,7 +22,6 @@ API.get("/info", async (req, res) => {
             const result = await yts({ listId: id })
             res.status(200).json(result)
         }
-        res.status(200).json(plist)
     } catch (err) {
         console.log(err)
     }
