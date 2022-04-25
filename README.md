@@ -2,7 +2,7 @@
 
 Ứng Dụng Nghe Audio Với Nguồn Dữ Liệu Dồi Dào Từ Youtube
 
-1. git clone https://github.com/Darkness-Scholar/RMedia.git
+1. git clone https://github.com/Darkness-Scholar/RMedia-Server.git
 
 2. cd client or cd server
 
