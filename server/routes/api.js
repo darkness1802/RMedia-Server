@@ -10,7 +10,7 @@ API.get("/", async (req, res) => {
     res.status(200).json("You can use API to get data from youtube")
 })
 
-/** @method get video info */
+/** @method get : video info */
 API.get("/info", async (req, res) => {
     // example: http://localhost:8888/api/info?id=dQw4w9WgXcQ
     let { id, type } = req.query
@@ -40,7 +40,7 @@ API.post("/search", async (req, res) => {
     }
 })
 
-/** @method get source media and download to server, send to client [test] */
+/** @method get : tải file về server rồi truyền về client (beta) */
 API.get("/download", async (req, res) => {
     // example: localhost:8888/api/download?id=N-MeunQr8gk
     let { id } = req.query
@@ -50,28 +50,37 @@ API.get("/download", async (req, res) => {
         })
 })
 
-/** @method get stream media url */
+/** @method get : client gửi đến 1 playlist id, sever xử lý và gửi về 1 mảng các stream src */
+API.get("/tracklist", async (req, res) => {
+    let id = req.query.id
+    const { videos } = await yts({ listId: id })
+    Promise.all(videos.map(item => {
+        return ytdl.getInfo(item.videoId)
+    })).then(result => {
+        let src = result.map(item => {
+            return item.formats.find(i => i.itag === 251).url
+        })
+        res.status(200).json(src)
+    })
+})
+
+/** @method get : nhận id và type, trả về 1 media stream src */
 API.get("/stream", async (req, res) => {
     let { id, type } = req.query // example: localhost:8888/api/stream?id=N-MeunQr8gk&type=audio
     console.log(`Get media stream url: ${id}, type: ${type}`)
     try {
         if (type === "audio") {
-            let videoInfo = await ytdl.getInfo(id)
-            let source = videoInfo?.formats
-            // GET AUDIO STREAM URL:
-            // Dữ liệu trả về phụ thuộc vào itag của item, có thể tham khảo youtube itag trên google
-            let result = source.find(item => item.itag === 251)
-            res.status(200).redirect(result.url)
+            let { formats } = await ytdl.getInfo(id)
+            let { url } = formats.find(item => item.itag === 251)
+            res.status(200).json(url)
         } if (type === "video") {
-            let videoInfo = await ytdl.getInfo(id)
-            let source = videoInfo?.formats
-            // GET VIDEO STREAM URL:
-            // Dữ liệu trả về phụ thuộc vào itag của item
-            let result = source.find(item => item.itag === 251)
-            res.status(200).download(result.url)
+            // let { formats } = await ytdl.getInfo(id)
+            // let { url } = formats.find(item => item.itag === 251)
+            res.status(500).json("Tinh nang dang thu nghiem")
         }
     } catch (err) {
-        console.log(err)
+        console.log("Video ID not found")
+        res.status(500).json("Not found")
     }
 })
 
